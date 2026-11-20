@@ -155,7 +155,7 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 const S = {
   route: 'main', data: null, admin: null,
   pin: localStorage.getItem('ugly-pin') || '',
-  keys: {}, prevPhase: null, showResults: false, revealRun: 0, qrLink: null, revealShown: false,
+  keys: {}, showResults: false, revealRun: 0, qrLink: null, revealShown: false,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -673,10 +673,7 @@ async function refresh() {
     $('hit-counter').textContent = pad(S.data.visitorCounter || 0);
     if (statusIsLoading || lastFetchFailed) setStatus('');
     lastFetchFailed = false;
-    const autoReveal = S.route === 'screen' && S.prevPhase && S.prevPhase !== 'reveal' && S.data.phase === 'reveal';
-    S.prevPhase = S.data.phase;
     render();
-    if (autoReveal) playReveal(S.data.results);
   } catch (err) {
     lastFetchFailed = true;
     setStatus(L().fetchFailed(friendlyError(err)), true);
