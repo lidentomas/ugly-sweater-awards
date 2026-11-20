@@ -10,7 +10,7 @@ const I18N = {
     pinLabel: 'Spelledarkod',
     login: 'Logga in',
     construction: '🚧 Denna sida är alltid under konstruktion 🚧',
-    voteCounter: 'Antal röster:',
+    voteCounter: 'Besöksräknare:',
     netscape: 'Bäst i Netscape Navigator 4.0 vid 800×600. Gjord med ❤️ och glögg.',
     navVote: '🗳️ Rösta', navScreen: '🖥️ Storskärm', navAdmin: '🎅 Spelledare',
     loading: 'Laddar tomtenissarna…',
@@ -79,7 +79,7 @@ const I18N = {
     pinLabel: 'Game master code',
     login: 'Log in',
     construction: '🚧 This page is permanently under construction 🚧',
-    voteCounter: 'Votes cast:',
+    voteCounter: 'Visitor counter:',
     netscape: 'Best viewed in Netscape Navigator 4.0 at 800×600. Made with ❤️ and mulled wine.',
     navVote: '🗳️ Vote', navScreen: '🖥️ Big screen', navAdmin: '🎅 Game master',
     loading: 'Waking up the elves…',
@@ -648,7 +648,6 @@ async function refresh() {
         else throw err;
       }
     }
-    $('hit-counter').textContent = pad(S.data.voteCount);
     if (statusIsLoading || lastFetchFailed) setStatus('');
     lastFetchFailed = false;
     const autoReveal = S.route === 'screen' && S.prevPhase && S.prevPhase !== 'reveal' && S.data.phase === 'reveal';
@@ -678,6 +677,17 @@ function letItSnow() {
   }
 }
 
+function animateVisitorCounter() {
+  const counter = $('hit-counter');
+  let visits = 0;
+  const tick = () => {
+    visits += Math.floor(Math.random() * 9) + 1;
+    counter.textContent = pad(visits);
+    setTimeout(tick, 5000 + Math.random() * 10000);
+  };
+  setTimeout(tick, 5000 + Math.random() * 10000);
+}
+
 if (reducedMotion) document.querySelectorAll('marquee').forEach((m) => m.stop && m.stop());
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$('reveal-stage').hidden) { S.revealRun++; $('reveal-stage').hidden = true; if (S.route === 'screen') renderScreen(); }
@@ -688,6 +698,7 @@ statusIsLoading = true;
 S.route = routeFromHash();
 applyStaticTexts();
 letItSnow();
+animateVisitorCounter();
 applyRoute();
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, 4000);
