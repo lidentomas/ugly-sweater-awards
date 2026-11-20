@@ -249,6 +249,7 @@ function staticCard(c) {
     h('span', { class: 'name', text: c.name }),
     c.motto ? h('span', { class: 'motto', text: `”${c.motto}”` }) : null,
     c.mine ? h('span', { class: 'tag', text: L().thisIsYou }) : null,
+    c.voted ? h('span', { class: 'tag', text: L().yourVote }) : null,
   ));
 }
 
@@ -411,7 +412,10 @@ function renderMainList() {
     box.append(ul);
     return;
   }
-  box.append(h('div', { class: 'box box-white' }, h('h2', { text: t.contestants(list.length) }), h('ul', { class: 'cards' }, list.map(staticCard))));
+  box.append(h('div', { class: 'box box-white' }, h('h2', { text: t.contestants(list.length) }), h('ul', { class: 'cards' }, list.map((c) => staticCard({
+    ...c,
+    voted: d.phase === 'closed' && same(d.myVoteFor, c.id),
+  })))));
 }
 
 /* ---------- Storskärmen ---------- */
