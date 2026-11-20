@@ -4,6 +4,18 @@ import { createStore } from '../lib/store.js';
 
 const store = createStore();
 
+function missingConfiguration() {
+  const missing = [];
+  if (!process.env.ADMIN_PIN) missing.push('ADMIN_PIN');
+  if (!process.env.IDENTITY_COOKIE_SECRET) missing.push('IDENTITY_COOKIE_SECRET');
+  const hasRedisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const hasRedisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  if (process.env.VERCEL && !(hasRedisUrl && hasRedisToken)) {
+    missing.push('Upstash Redis URL and token');
+  }
+  return missing;
+}
+
 function signValue(value, secret) {
   return crypto.createHmac('sha256', secret).update(value).digest('base64url');
 }
@@ -47,21 +59,25 @@ export default async function handler(req, res) {
     return;
   }
 
-  let actor = readIdentity(req);
-  let setCookie = null;
-  if (!actor) {
-    actor = crypto.randomUUID();
-    const secret = identitySecret();
-    const signature = signValue(actor, secret);
-    const secure = process.env.VERCEL ? '; Secure' : '';
-    setCookie = `ugly_actor=${encodeURIComponent(`${actor}.${signature}`)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000${secure}`;
+  const missing = missingConfiguration();
+  if (missing.length) {
+    res.status(503).json({ error: 'missing_configuration', missing });
+    return;
   }
 
-  const action = String(req.query.action || req.body?.action || '');
-  const args = { ...(req.body || {}) };
-  args.adminPin = process.env.ADMIN_PIN || '';
-
+  let setCookie = null;
   try {
+    let actor = readIdentity(req);
+    if (!actor) {
+      actor = crypto.randomUUID();
+      const signature = signValue(actor, identitySecret());
+      const secure = process.env.VERCEL ? '; Secure' : '';
+      setCookie = `ugly_actor=${encodeURIComponent(`${actor}.${signature}`)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=31536000${secure}`;
+    }
+
+    const action = String(req.query.action || req.body?.action || '');
+    const args = { ...(req.body || {}) };
+    args.adminPin = process.env.ADMIN_PIN;
     const rows = await store.snapshot();
     const gameRows = {
       state: rows.state,
@@ -100,6 +116,12 @@ export default async function handler(req, res) {
     res.status(200).json(result);
   } catch (error) {
     if (setCookie) res.setHeader('Set-Cookie', setCookie);
-    res.status(400).json({ error: cleanError(error) });
+    const code = cleanError(error);
+    if (code === 'server_error') {
+      console.error('Ugly Sweater API request failed:', error);
+      res.status(500).json({ error: code });
+      return;
+    }
+    res.status(400).json({ error: code });
   }
 }
