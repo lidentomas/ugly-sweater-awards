@@ -98,7 +98,7 @@ export default async function handler(req, res) {
       result = { ok: true };
     } else if (action === 'setPhase') {
       result = runAction(action, args, actor, gameRows);
-      await store.setState({ phase: args.phase });
+      await store.setState({ phase: args.phase, revealStarted: false });
     } else if (action === 'setLink') {
       result = runAction(action, args, actor, gameRows);
       await store.setState({ link: result.link });
@@ -111,6 +111,11 @@ export default async function handler(req, res) {
     } else if (action === 'state') {
       result = runAction(action, args, actor, gameRows);
       result.visitorCounter = await store.tickVisitorCounter(actor);
+    } else if (action === 'startReveal') {
+      runAction(action, args, actor, gameRows);
+      await store.startReveal();
+      const updatedRows = await store.snapshot();
+      result = runAction('state', args, actor, updatedRows);
     } else {
       result = runAction(action, args, actor, gameRows);
     }

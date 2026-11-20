@@ -63,13 +63,18 @@ describe('Ugly Sweater Awards game logic', () => {
     expect(state.contestants).toHaveLength(0);
   });
 
-  it('hides vote results until reveal', () => {
+  it('hides vote results until the big screen starts the reveal', () => {
     const data = rows({
-      state: { phase: 'voting', link: '' },
+      state: { phase: 'reveal', link: '', revealStarted: false },
       contestants: [{ id: 'a', author: 'person-a', data: { name: 'Ada' } }],
       votes: [{ id: 'v', author: 'person-b', data: { contestantId: 'a' } }],
     });
-    expect(runAction('state', {}, 'person-b', data).results).toBeNull();
+    const state = runAction('state', {}, 'person-b', data);
+    expect(state.results).toBeNull();
+    expect(state.revealStarted).toBe(false);
+    expect(runAction('startReveal', {}, 'screen', data).revealStarted).toBe(true);
+    data.state.revealStarted = true;
+    expect(runAction('state', {}, 'person-b', data).results).toHaveLength(1);
   });
 
   it('allows test contestants to receive votes', () => {

@@ -288,8 +288,8 @@ function renderMain() {
   if (!d) return;
   $('phase-banner').textContent = L().phase[d.phase] || '';
   $('phase-banner').classList.toggle('blink', d.phase === 'voting' || d.phase === 'signup');
-  if (changed('main-action', { phase: d.phase, joined: d.joined, s: S.showResults })) renderMainAction();
-  if (changed('main-list', { phase: d.phase, c: d.contestants, n: d.signupCount, v: d.myVoteFor, r: d.results, s: S.showResults })) renderMainList();
+  if (changed('main-action', { phase: d.phase, joined: d.joined, revealStarted: d.revealStarted, s: S.showResults })) renderMainAction();
+  if (changed('main-list', { phase: d.phase, c: d.contestants, n: d.signupCount, v: d.myVoteFor, r: d.results, revealStarted: d.revealStarted, s: S.showResults })) renderMainList();
 }
 
 function renderMainAction() {
@@ -344,9 +344,13 @@ function renderMainAction() {
   } else if (d.phase === 'closed') {
     box.append(h('div', { class: 'box box-white' }, h('h2', { text: t.closedTitle }), h('p', { text: t.closedText })));
   } else if (d.phase === 'reveal') {
-    const toggle = h('button', { type: 'button', class: 'btn', text: S.showResults ? t.hideResults : t.showResults });
-    toggle.addEventListener('click', () => { S.showResults = !S.showResults; renderMain(); });
-    box.append(h('div', { class: 'box box-lime' }, h('h2', { class: 'blink', text: t.lookScreen }), toggle));
+    const children = [h('h2', { class: 'blink', text: t.lookScreen })];
+    if (d.revealStarted) {
+      const toggle = h('button', { type: 'button', class: 'btn', text: S.showResults ? t.hideResults : t.showResults });
+      toggle.addEventListener('click', () => { S.showResults = !S.showResults; renderMain(); });
+      children.push(toggle);
+    }
+    box.append(h('div', { class: 'box box-lime' }, ...children));
   }
 }
 
@@ -469,9 +473,23 @@ function renderScreen() {
 /* ---------- Avslöjandet ---------- */
 async function playReveal(results) {
   const run = ++S.revealRun;
+  const alive = () => run === S.revealRun;
+  if (!S.data.revealStarted) {
+    try {
+      const state = await api('startReveal');
+      if (!alive()) return;
+      S.data.revealStarted = state.revealStarted;
+      S.data.results = state.results;
+      results = state.results;
+      S.keys['screen-body'] = null;
+      renderScreen();
+    } catch (err) {
+      if (alive()) setStatus(friendlyError(err), true);
+      return;
+    }
+  }
   const t = L();
   const stage = $('reveal-stage');
-  const alive = () => run === S.revealRun;
   const groups = [];
   for (const r of (results || []).filter((x) => x.votes > 0)) {
     const g = groups.find((x) => x.votes === r.votes);
