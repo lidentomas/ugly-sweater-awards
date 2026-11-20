@@ -648,6 +648,7 @@ async function refresh() {
         else throw err;
       }
     }
+    $('hit-counter').textContent = pad(S.data.visitorCounter || 0);
     if (statusIsLoading || lastFetchFailed) setStatus('');
     lastFetchFailed = false;
     const autoReveal = S.route === 'screen' && S.prevPhase && S.prevPhase !== 'reveal' && S.data.phase === 'reveal';
@@ -677,17 +678,6 @@ function letItSnow() {
   }
 }
 
-function animateVisitorCounter() {
-  const counter = $('hit-counter');
-  let visits = 0;
-  const tick = () => {
-    visits += Math.floor(Math.random() * 9) + 1;
-    counter.textContent = pad(visits);
-    setTimeout(tick, 5000 + Math.random() * 10000);
-  };
-  setTimeout(tick, 5000 + Math.random() * 10000);
-}
-
 if (reducedMotion) document.querySelectorAll('marquee').forEach((m) => m.stop && m.stop());
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$('reveal-stage').hidden) { S.revealRun++; $('reveal-stage').hidden = true; if (S.route === 'screen') renderScreen(); }
@@ -698,7 +688,6 @@ statusIsLoading = true;
 S.route = routeFromHash();
 applyStaticTexts();
 letItSnow();
-animateVisitorCounter();
 applyRoute();
 refresh();
 setInterval(() => { if (!document.hidden) refresh(); }, 4000);

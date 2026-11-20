@@ -108,6 +108,9 @@ export default async function handler(req, res) {
     } else if (action === 'removeContestant') {
       result = runAction(action, args, actor, gameRows);
       await store.removeContestant(String(args.contestantId));
+    } else if (action === 'state') {
+      result = runAction(action, args, actor, gameRows);
+      result.visitorCounter = await store.tickVisitorCounter(actor);
     } else {
       result = runAction(action, args, actor, gameRows);
     }
