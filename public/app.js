@@ -289,8 +289,8 @@ function renderMain() {
   if (!d) return;
   $('phase-banner').textContent = L().phase[d.phase] || '';
   $('phase-banner').classList.toggle('blink', d.phase === 'voting' || d.phase === 'signup');
-  if (changed('main-action', { phase: d.phase, joined: d.joined, revealStarted: d.revealStarted, s: S.showResults })) renderMainAction();
-  if (changed('main-list', { phase: d.phase, c: d.contestants, n: d.signupCount, v: d.myVoteFor, r: d.results, revealStarted: d.revealStarted, s: S.showResults })) renderMainList();
+  if (changed('main-action', { phase: d.phase, joined: d.joined, revealComplete: d.revealComplete, s: S.showResults })) renderMainAction();
+  if (changed('main-list', { phase: d.phase, c: d.contestants, n: d.signupCount, v: d.myVoteFor, r: d.results, revealComplete: d.revealComplete, s: S.showResults })) renderMainList();
 }
 
 function renderMainAction() {
@@ -346,7 +346,7 @@ function renderMainAction() {
     box.append(h('div', { class: 'box box-white' }, h('h2', { text: t.closedTitle }), h('p', { text: t.closedText })));
   } else if (d.phase === 'reveal') {
     const children = [h('h2', { class: 'blink', text: t.lookScreen })];
-    if (d.revealStarted) {
+    if (d.revealComplete) {
       const toggle = h('button', { type: 'button', class: 'btn', text: S.showResults ? t.hideResults : t.showResults });
       toggle.addEventListener('click', () => { S.showResults = !S.showResults; renderMain(); });
       children.push(toggle);
@@ -362,7 +362,9 @@ function renderMainList() {
   box.replaceChildren();
 
   if (d.phase === 'reveal') {
-    if (S.showResults) box.append(h('div', { class: 'box box-white' }, h('h2', { text: t.results }), resultsList(d.results)));
+    if (d.revealComplete && S.showResults) {
+      box.append(h('div', { class: 'box box-white' }, h('h2', { text: t.results }), resultsList(d.results)));
+    }
     return;
   }
   if (d.phase === 'signup') {
@@ -447,7 +449,18 @@ function renderScreen() {
 
   if (d.phase === 'reveal') {
     const start = h('button', { type: 'button', class: 'btn btn-big', text: S.revealShown ? t.again : t.startReveal });
-    start.addEventListener('click', () => playReveal(d.results));
+    start.addEventListener('click', async () => {
+      try {
+        const reveal = await api('startReveal');
+        S.data.revealStarted = reveal.revealStarted;
+        S.data.results = reveal.results;
+        S.keys['screen-body'] = null;
+        renderScreen();
+        await playReveal(reveal.results);
+      } catch (err) {
+        setStatus(friendlyError(err), true);
+      }
+    });
     if (!S.revealShown) {
       // Inga resultat syns förrän showen har spelats upp
       body.append(h('div', { class: 'box box-yellow' }, h('h2', { class: 'blink', text: t.revealTeaser }), start));
@@ -478,20 +491,6 @@ function renderScreen() {
 async function playReveal(results) {
   const run = ++S.revealRun;
   const alive = () => run === S.revealRun;
-  if (!S.data.revealStarted) {
-    try {
-      const state = await api('startReveal');
-      if (!alive()) return;
-      S.data.revealStarted = state.revealStarted;
-      S.data.results = state.results;
-      results = state.results;
-      S.keys['screen-body'] = null;
-      renderScreen();
-    } catch (err) {
-      if (alive()) setStatus(friendlyError(err), true);
-      return;
-    }
-  }
   const t = L();
   const stage = $('reveal-stage');
   const groups = [];
@@ -501,7 +500,23 @@ async function playReveal(results) {
   }
   const controls = () => {
     const close = h('button', { type: 'button', class: 'btn', text: t.close });
-    close.addEventListener('click', () => { S.revealRun++; stage.hidden = true; renderScreen(); });
+    close.addEventListener('click', async () => {
+      close.disabled = true;
+      try {
+        const completed = await api('finishReveal');
+        if (!alive()) return;
+        S.data.revealComplete = completed.revealComplete;
+        S.data.results = completed.results;
+        S.data.visitorCounter = completed.visitorCounter;
+        S.revealRun++;
+        stage.hidden = true;
+        S.keys['screen-body'] = null;
+        renderScreen();
+      } catch (err) {
+        close.disabled = false;
+        if (alive()) setStatus(friendlyError(err), true);
+      }
+    });
     const again = h('button', { type: 'button', class: 'btn btn-ghost', text: t.again });
     again.addEventListener('click', () => playReveal(results));
     return h('div', { class: 'controls' }, again, close);

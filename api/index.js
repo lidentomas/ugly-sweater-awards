@@ -98,7 +98,7 @@ export default async function handler(req, res) {
       result = { ok: true };
     } else if (action === 'setPhase') {
       result = runAction(action, args, actor, gameRows);
-      await store.setState({ phase: args.phase, revealStarted: false });
+      await store.setState({ phase: args.phase, revealStarted: false, revealComplete: false });
     } else if (action === 'setLink') {
       result = runAction(action, args, actor, gameRows);
       await store.setState({ link: result.link });
@@ -114,8 +114,13 @@ export default async function handler(req, res) {
     } else if (action === 'startReveal') {
       runAction(action, args, actor, gameRows);
       await store.startReveal();
+      result = runAction(action, args, actor, gameRows);
+    } else if (action === 'finishReveal') {
+      runAction(action, args, actor, gameRows);
+      await store.finishReveal();
       const updatedRows = await store.snapshot();
       result = runAction('state', args, actor, updatedRows);
+      result.visitorCounter = await store.tickVisitorCounter(actor);
     } else {
       result = runAction(action, args, actor, gameRows);
     }
