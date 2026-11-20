@@ -1,8 +1,8 @@
-// Ugly Sweater Awards 2026 – klientlogik
+// Ugly Christmas Sweater Awards 2026 – klientlogik
 const I18N = {
   sv: {
     ticker: '★彡 VÄLKOMMEN TILL AUCTIONETS JULFEST 2026 彡★ \u00a0\u00a0 🎄 RÖSTA PÅ ÅRETS FULASTE TRÖJA 🎄 \u00a0\u00a0 ✨ GOD JUL & GOTT NYTT ÅR ✨ \u00a0\u00a0 🦌 RUDOLF ÄR ÄNTLIGEN MED PÅ BILD 🦌 \u00a0\u00a0 🎅 TOMTEN SER ALLT 🎅',
-    title: 'Ugly Sweater Awards 2026 – Auctionets julfest',
+    title: 'Ugly Christmas Sweater Awards 2026 – Auctionets julfest',
     subtitle: '~*~ Auctionets officiella tävling i fulaste jultröja ~*~',
     scanVote: 'SKANNA & RÖSTA!!!',
     loginHint: 'Skanna QR-koden och rösta från din mobil',
@@ -71,7 +71,7 @@ const I18N = {
   },
   en: {
     ticker: '★彡 WELCOME TO THE AUCTIONET CHRISTMAS PARTY 2026 彡★ \u00a0\u00a0 🎄 VOTE FOR THIS YEAR’S UGLIEST SWEATER 🎄 \u00a0\u00a0 ✨ MERRY CHRISTMAS & HAPPY NEW YEAR ✨ \u00a0\u00a0 🦌 RUDOLPH FINALLY MADE IT INTO THE PICTURE 🦌 \u00a0\u00a0 🎅 SANTA SEES EVERYTHING 🎅',
-    title: 'Ugly Sweater Awards 2026 – Auctionet Christmas party',
+    title: 'Ugly Christmas Sweater Awards 2026 – Auctionet Christmas party',
     subtitle: '~*~ Auctionet’s official ugliest Christmas sweater contest ~*~',
     scanVote: 'SCAN & VOTE!!!',
     loginHint: 'Scan the QR code and vote from your mobile',
@@ -515,7 +515,7 @@ async function playReveal(results) {
   stage.hidden = false;
   if (groups.length === 0) { S.revealShown = true; show(h('div', { class: 'kicker', text: t.noVotes })); return; }
 
-  show(h('div', { class: 'kicker pop', text: '🎄 Ugly Sweater Awards 2026 🎄' }));
+  show(h('div', { class: 'kicker pop', text: '🎄 Ugly Christmas Sweater Awards 2026 🎄' }));
   await sleep(2500); if (!alive()) return;
   for (const [idx, label] of [[2, t.third], [1, t.second]]) {
     if (!groups[idx]) continue;
