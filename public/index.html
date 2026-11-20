@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ugly Sweater Awards 2026</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@2.0.4/qrcode.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div id="snow" aria-hidden="true"></div>
+
+  <marquee id="ticker" class="ticker" scrollamount="7" aria-hidden="true"></marquee>
+
+  <div class="langbar" role="group" aria-label="Språk / Language">
+    <button type="button" class="lang-btn" data-lang="sv" aria-pressed="false">🇸🇪 Svenska</button>
+    <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">🇬🇧 English</button>
+  </div>
+
+  <header class="masthead">
+    <p class="sparkles" aria-hidden="true">🎄🔔⭐🎁🦌⭐🔔🎄</p>
+    <h1 class="wordart">Ugly Sweater Awards 2026</h1>
+    <p class="subtitle" data-i18n="subtitle"></p>
+  </header>
+
+  <main id="app">
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+
+    <section id="view-main" hidden>
+      <div id="phase-banner" class="phase-banner"></div>
+      <div id="main-action"></div>
+      <div id="main-list"></div>
+    </section>
+
+    <section id="view-screen" hidden>
+      <div class="screen-grid">
+        <div class="screen-qr box box-lime">
+          <h2 class="blink" data-i18n="scanVote"></h2>
+          <div id="qr" class="qr"></div>
+          <p class="small" data-i18n="loginHint"></p>
+        </div>
+        <div class="screen-main">
+          <div id="screen-banner" class="phase-banner"></div>
+          <div id="screen-body"></div>
+        </div>
+      </div>
+      <div id="reveal-stage" class="reveal-stage" hidden></div>
+    </section>
+
+    <section id="view-admin" hidden>
+      <div class="box box-white">
+        <h2 data-i18n="adminTitle"></h2>
+        <div id="admin-login">
+          <form id="pin-form" class="row">
+            <label for="pin" data-i18n="pinLabel"></label>
+            <input id="pin" name="pin" type="password" autocomplete="off" required>
+            <button type="submit" class="btn" data-i18n="login"></button>
+          </form>
+        </div>
+        <div id="admin-panel" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="construction" data-i18n="construction"></p>
+    <p class="counter-line"><span data-i18n="voteCounter"></span> <span id="hit-counter" class="hit-counter">000000</span></p>
+    <p class="small" data-i18n="netscape"></p>
+    <nav class="nav">
+      <button type="button" class="nav-btn" data-route="main" data-i18n="navVote"></button>
+      <button type="button" class="nav-btn" data-route="screen" data-i18n="navScreen"></button>
+      <button type="button" class="nav-btn" data-route="admin" data-i18n="navAdmin"></button>
+    </nav>
+  </footer>
+</body>
+</html>

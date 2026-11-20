@@ -1,0 +1,21 @@
+{
+  "name": "ugly-sweater-awards-2026",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm dlx vercel dev",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.35.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "vitest": "^4.0.15"
+  }
+}
